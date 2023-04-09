@@ -1,0 +1,265 @@
+CCS PCM C Compiler, Version 4.104, 5967               09-abr.-23 14:57
+
+               Filename: D:\Reflex\semaforoContador2023\tiemposAuxiliar.lst
+
+               ROM used: 181 words (18%)
+                         Largest free fragment is 843
+               RAM used: 7 (11%) at main() level
+                         14 (22%) worst case
+               Stack:    2 locations
+
+*
+0000:  MOVLW  00
+0001:  MOVWF  0A
+0002:  GOTO   004
+0003:  NOP
+0004:  CALL   3FF
+0005:  BSF    03.5
+0006:  MOVWF  10
+0007:  MOVLW  00
+0008:  MOVWF  0A
+0009:  GOTO   080
+.................... #include <12f629.h> 
+.................... //////// Standard Header file for the PIC12F629 device //////////////// 
+.................... #device PIC12F629 
+.................... #list 
+....................  
+.................... //#include <16f886.h> 
+.................... #fuses INTRC_IO,NOWDT, NOMCLR 
+.................... #use delay (clock = 4000000) 
+*
+0027:  MOVLW  2C
+0028:  MOVWF  04
+0029:  MOVF   00,W
+002A:  BTFSC  03.2
+002B:  GOTO   03A
+002C:  MOVLW  01
+002D:  MOVWF  21
+002E:  CLRF   20
+002F:  DECFSZ 20,F
+0030:  GOTO   02F
+0031:  DECFSZ 21,F
+0032:  GOTO   02E
+0033:  MOVLW  4A
+0034:  MOVWF  20
+0035:  DECFSZ 20,F
+0036:  GOTO   035
+0037:  GOTO   038
+0038:  DECFSZ 00,F
+0039:  GOTO   02C
+003A:  RETURN
+....................  
+.................... char ledRojo=PIN_a0; 
+.................... char ledAmarillo=PIN_a1; 
+.................... char ledVerde=PIN_a2; 
+.................... /* 
+.................... int1 BOTON1 =0; 
+.................... int1 BOTON2 =0; 
+....................  
+....................  
+.................... struct Persona{ 
+....................    char nombre[6]; 
+....................    int edad; 
+....................    char quienLlama[6]; 
+....................    int cont; 
+....................    int cont1; 
+....................    int cont2; 
+....................    int flag1; 
+....................    int flag3; 
+....................  }; 
+....................   
+.................... void copiarNombre(struct Persona *p) { 
+....................    p->edad = p->edad * 2; 
+....................     
+....................    strcpy(p->quienLlama, "fuiyo");//Se usan punteros para modificar la Persona que se paso como parametro 
+....................    p->edad=0; 
+.................... } 
+....................  
+....................  void Leds(char x){ 
+....................   
+....................             output_high(x); 
+....................             delay_ms(500);                                                                      
+....................             output_low(x); 
+....................             delay_ms(500); 
+....................    } 
+....................     
+....................  void leerEntradas(){ 
+....................       BOTON1 = INPUT (PIN_a5); 
+....................       BOTON2= INPUT (PIN_a3); 
+....................  } 
+....................  */ 
+....................  /////////Funciones//////////// 
+....................  void encender(char luz, int time){ 
+....................    output_high(luz); 
+003B:  MOVF   27,W
+003C:  MOVWF  29
+003D:  MOVLW  01
+003E:  MOVWF  2A
+003F:  CLRF   2B
+0040:  CALL   00A
+0041:  MOVF   27,W
+0042:  MOVWF  29
+0043:  CLRF   2A
+0044:  MOVLW  80
+0045:  MOVWF  2B
+0046:  CALL   00A
+....................    delay_ms(time*1000); 
+0047:  CLRF   2A
+0048:  MOVF   28,W
+0049:  MOVWF  29
+004A:  MOVLW  03
+004B:  MOVWF  2C
+004C:  MOVLW  E8
+004D:  MOVWF  2B
+*
+0062:  MOVF   22,W
+0063:  MOVWF  2A
+0064:  MOVF   21,W
+0065:  MOVWF  29
+0066:  MOVF   22,W
+0067:  MOVWF  2B
+0068:  INCF   2B,F
+0069:  DECF   2B,F
+006A:  BTFSC  03.2
+006B:  GOTO   070
+006C:  MOVLW  FF
+006D:  MOVWF  2C
+006E:  CALL   027
+006F:  GOTO   069
+0070:  MOVF   29,W
+0071:  MOVWF  2C
+0072:  CALL   027
+....................  } 
+0073:  RETURN
+....................   void apagar(char luz){ 
+....................    output_low(luz); 
+0074:  MOVF   27,W
+0075:  MOVWF  29
+0076:  CLRF   2A
+0077:  CLRF   2B
+0078:  CALL   00A
+0079:  MOVF   27,W
+007A:  MOVWF  29
+007B:  CLRF   2A
+007C:  MOVLW  80
+007D:  MOVWF  2B
+007E:  CALL   00A
+....................  } 
+007F:  RETURN
+....................  //////////////////////////////// 
+....................   
+....................   
+.................... void main()  
+....................  {  
+0080:  CLRF   04
+0081:  MOVLW  1F
+0082:  ANDWF  03,F
+0083:  MOVLW  28
+0084:  MOVWF  24
+0085:  MOVLW  29
+0086:  MOVWF  25
+0087:  MOVLW  2A
+0088:  MOVWF  26
+0089:  MOVLW  07
+008A:  MOVWF  19
+....................    //setup_timer_0(RTCC_INTERNAL|RTCC_DIV_256); 
+....................    //enable_interrupts(INT_TIMER0); 
+....................    //set_TIMER0(0x61); //inicializa el timer0 
+....................    //enable_interrupts(GLOBAL); 
+....................     
+....................     
+....................     output_a(0x00); 
+008B:  BSF    03.5
+008C:  CLRF   05
+008D:  BCF    03.5
+008E:  CLRF   05
+....................     set_tris_A (0b11111000); 
+008F:  MOVLW  F8
+0090:  BSF    03.5
+0091:  MOVWF  05
+....................      
+....................      
+....................     while(1)  
+....................       {  
+....................          encender(ledRojo,10); 
+0092:  BCF    03.5
+0093:  MOVF   24,W
+0094:  MOVWF  27
+0095:  MOVLW  0A
+0096:  MOVWF  28
+0097:  CALL   03B
+....................          encender(ledAmarillo,2); 
+0098:  MOVF   25,W
+0099:  MOVWF  27
+009A:  MOVLW  02
+009B:  MOVWF  28
+009C:  CALL   03B
+....................          apagar(ledRojo); 
+009D:  MOVF   24,W
+009E:  MOVWF  27
+009F:  CALL   074
+....................          apagar(ledAmarillo); 
+00A0:  MOVF   25,W
+00A1:  MOVWF  27
+00A2:  CALL   074
+....................          encender(ledVerde,5); 
+00A3:  MOVF   26,W
+00A4:  MOVWF  27
+00A5:  MOVLW  05
+00A6:  MOVWF  28
+00A7:  CALL   03B
+....................          apagar(ledVerde); 
+00A8:  MOVF   26,W
+00A9:  MOVWF  27
+00AA:  CALL   074
+....................          encender(ledAmarillo,2); 
+00AB:  MOVF   25,W
+00AC:  MOVWF  27
+00AD:  MOVLW  02
+00AE:  MOVWF  28
+00AF:  CALL   03B
+....................          apagar(ledAmarillo); 
+00B0:  MOVF   25,W
+00B1:  MOVWF  27
+00B2:  CALL   074
+....................          //delay_ms(2000); 
+....................  
+....................       }  
+00B3:  GOTO   093
+....................      
+....................      
+....................      
+....................      
+....................      
+....................     /* 
+....................     struct Persona jhonny= {"Jhonny",31,"sumadre"}; 
+....................      
+....................  
+....................  
+....................  
+....................            // Asignación de valores a los campos de la estructura 
+....................            //strcpy(jhonny.nombre, "Jhonny"); 
+....................            //jhonny.edad = 31; 
+....................             
+....................      
+....................     while(1)  
+....................     {  
+....................            leerEntradas(); 
+....................            copiarNombre(&jhonny); 
+....................        
+....................           if(  BOTON1 && BOTON2  )  {  //Condicion 2 botones 
+....................             char miPin =PIN_a0; 
+....................             Leds(miPin); 
+....................             miPin =PIN_a1; 
+....................             Leds(miPin); 
+....................             
+....................             } 
+....................    } 
+....................     
+....................     
+....................    */ 
+.................... } 
+00B4:  SLEEP
+
+Configuration Fuses:
+   Word  1: 3FC4   NOWDT NOCPD NOPROTECT NOMCLR PUT INTRC_IO BROWNOUT BANDGAP_HIGH

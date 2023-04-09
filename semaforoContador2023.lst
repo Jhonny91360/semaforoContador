@@ -1,0 +1,619 @@
+CCS PCM C Compiler, Version 4.104, 5967               09-abr.-23 18:39
+
+               Filename: D:\Reflex\semaforoContador2023\semaforoContador2023.lst
+
+               ROM used: 390 words (5%)
+                         Largest free fragment is 2048
+               RAM used: 52 (14%) at main() level
+                         52 (14%) worst case
+               Stack:    2 worst case (1 in main + 1 for interrupts)
+
+*
+0000:  MOVLW  00
+0001:  MOVWF  0A
+0002:  GOTO   0B2
+0003:  NOP
+0004:  MOVWF  7F
+0005:  SWAPF  03,W
+0006:  CLRF   03
+0007:  MOVWF  21
+0008:  MOVF   0A,W
+0009:  MOVWF  20
+000A:  CLRF   0A
+000B:  MOVF   04,W
+000C:  MOVWF  22
+000D:  MOVF   77,W
+000E:  MOVWF  23
+000F:  MOVF   78,W
+0010:  MOVWF  24
+0011:  MOVF   79,W
+0012:  MOVWF  25
+0013:  MOVF   7A,W
+0014:  MOVWF  26
+0015:  BCF    03.7
+0016:  BCF    03.5
+0017:  MOVLW  8C
+0018:  MOVWF  04
+0019:  BTFSS  00.0
+001A:  GOTO   01D
+001B:  BTFSC  0C.0
+001C:  GOTO   02E
+001D:  MOVF   22,W
+001E:  MOVWF  04
+001F:  MOVF   23,W
+0020:  MOVWF  77
+0021:  MOVF   24,W
+0022:  MOVWF  78
+0023:  MOVF   25,W
+0024:  MOVWF  79
+0025:  MOVF   26,W
+0026:  MOVWF  7A
+0027:  MOVF   20,W
+0028:  MOVWF  0A
+0029:  SWAPF  21,W
+002A:  MOVWF  03
+002B:  SWAPF  7F,F
+002C:  SWAPF  7F,W
+002D:  RETFIE
+002E:  BCF    0A.3
+002F:  BCF    0A.4
+0030:  GOTO   031
+.................... //Primer push github 
+.................... #INCLUDE       <16F886.H> 
+.................... //////// Standard Header file for the PIC16F886 device //////////////// 
+.................... #device PIC16F886 
+.................... #list 
+....................  
+.................... #FUSES         XT,NOWDT,PROTECT, NOMCLR, FCMEN 
+.................... #USE           DELAY(CLOCK=4000000) 
+....................  
+.................... ///Entradas/// 
+.................... int1 redSignal; 
+.................... int1 yellowSignal; 
+.................... int1 greenSignal; 
+.................... /////////////// 
+.................... ///Variables/// 
+.................... int timeCounter = 0; 
+.................... int counterBlink=0; 
+.................... ///Estructura de objeto para cada color///// 
+.................... struct Color{ 
+....................    boolean counting;    //Booleano para saber si se esta tomando tiempo de ese color 
+....................    boolean decreasing;  //Booleano para saber si se esta decrementando el tiempo de ese color 
+....................    int actualTime;      //Para almacenar el conteo actual 
+....................    int pastTime;        //Para almacenar el conteo pasado y comparar 
+....................    int decTime;         //Para decrementar conteo e ir mostrando en los leds 
+.................... }; 
+.................... ///Estructura de objeto para estado del programa///// 
+.................... struct Cycle{ 
+....................    char estate[20]; 
+....................    boolean initialState; 
+.................... }; 
+....................  
+....................  
+.................... ////////// Inicializo objeto de cada color///////////// 
+.................... struct Color Red = {false,false,0,0,0}; 
+*
+00C7:  BCF    03.6
+00C8:  CLRF   2A
+00C9:  CLRF   2B
+00CA:  CLRF   2C
+00CB:  CLRF   2D
+.................... struct Color YellowDown = {false,false,0,0,0}; 
+00CC:  CLRF   2E
+00CD:  CLRF   2F
+00CE:  CLRF   30
+00CF:  CLRF   31
+.................... struct Color YellowUp = {false,false,0,0,0}; 
+00D0:  CLRF   32
+00D1:  CLRF   33
+00D2:  CLRF   34
+00D3:  CLRF   35
+.................... struct Color Green = {false,false,0,0,0}; 
+00D4:  CLRF   36
+00D5:  CLRF   37
+00D6:  CLRF   38
+00D7:  CLRF   39
+.................... struct Cycle ProgramCycle={"",true}; 
+00D8:  CLRF   3A
+00D9:  CLRF   3B
+00DA:  CLRF   3C
+00DB:  CLRF   3D
+00DC:  CLRF   3E
+00DD:  CLRF   3F
+00DE:  CLRF   40
+00DF:  CLRF   41
+00E0:  CLRF   42
+00E1:  CLRF   43
+00E2:  CLRF   44
+00E3:  CLRF   45
+00E4:  CLRF   46
+00E5:  CLRF   47
+00E6:  CLRF   48
+00E7:  CLRF   49
+00E8:  CLRF   4A
+00E9:  CLRF   4B
+00EA:  CLRF   4C
+00EB:  CLRF   4D
+00EC:  MOVLW  01
+00ED:  MOVWF  4E
+....................  
+.................... //////////////////////////Funciones/////////////////////// 
+....................  
+.................... //Interrupcion Timer1 cada 10ms// 
+.................... #int_TIMER1                    
+.................... VOID TIMER1_isr(){  
+....................    SET_TIMER1(64286); 
+*
+0031:  MOVLW  FB
+0032:  MOVWF  0F
+0033:  MOVLW  1E
+0034:  MOVWF  0E
+....................    timeCounter+=20;   //Ojo esto deberia ser +1, pero por simulacion se deja en 20 
+0035:  MOVLW  14
+0036:  ADDWF  28,F
+....................     
+....................     
+....................    //Contar en segun color 
+....................    if(Red.counting && timeCounter>=100 ){ 
+0037:  BTFSS  2A.0
+0038:  GOTO   044
+0039:  MOVF   28,W
+003A:  SUBLW  63
+003B:  BTFSC  03.0
+003C:  GOTO   044
+....................       Red.actualTime++; 
+003D:  INCF   2B,F
+....................       output_toggle(pin_a4); 
+003E:  BSF    03.5
+003F:  BCF    05.4
+0040:  MOVLW  10
+0041:  BCF    03.5
+0042:  XORWF  05,F
+....................       timeCounter=0; 
+0043:  CLRF   28
+....................    } 
+....................    if(YellowDown.counting && timeCounter>=100 ){ 
+0044:  BTFSS  2E.0
+0045:  GOTO   04C
+0046:  MOVF   28,W
+0047:  SUBLW  63
+0048:  BTFSC  03.0
+0049:  GOTO   04C
+....................       YellowDown.actualTime++; 
+004A:  INCF   2F,F
+....................       timeCounter=0; 
+004B:  CLRF   28
+....................    } 
+....................    if(Green.counting && timeCounter>=100 ){ 
+004C:  BTFSS  36.0
+004D:  GOTO   054
+004E:  MOVF   28,W
+004F:  SUBLW  63
+0050:  BTFSC  03.0
+0051:  GOTO   054
+....................       Green.actualTime++; 
+0052:  INCF   37,F
+....................       timeCounter=0; 
+0053:  CLRF   28
+....................    } 
+....................    if(YellowUp.counting && timeCounter>=100 ){ 
+0054:  BTFSS  32.0
+0055:  GOTO   05C
+0056:  MOVF   28,W
+0057:  SUBLW  63
+0058:  BTFSC  03.0
+0059:  GOTO   05C
+....................       YellowUp.actualTime++; 
+005A:  INCF   33,F
+....................       timeCounter=0; 
+005B:  CLRF   28
+....................    } 
+....................     
+....................    //Decrementar segun color 
+....................     
+....................    if(Red.decreasing && timeCounter>=100){ 
+005C:  BTFSS  2A.1
+005D:  GOTO   06C
+005E:  MOVF   28,W
+005F:  SUBLW  63
+0060:  BTFSC  03.0
+0061:  GOTO   06C
+....................       Red.decTime--; 
+0062:  DECF   2D,F
+....................       output_toggle(pin_a5); 
+0063:  BSF    03.5
+0064:  BCF    05.5
+0065:  MOVLW  20
+0066:  BCF    03.5
+0067:  XORWF  05,F
+....................       timeCounter=0; 
+0068:  CLRF   28
+....................       if(Red.decTime<1) Red.decreasing=false; 
+0069:  MOVF   2D,F
+006A:  BTFSC  03.2
+006B:  BCF    2A.1
+....................    } 
+....................     
+....................    if(YellowDown.decreasing && timeCounter>=100){ 
+006C:  BTFSS  2E.1
+006D:  GOTO   077
+006E:  MOVF   28,W
+006F:  SUBLW  63
+0070:  BTFSC  03.0
+0071:  GOTO   077
+....................       YellowDown.decTime--; 
+0072:  DECF   31,F
+....................       timeCounter=0; 
+0073:  CLRF   28
+....................       if(YellowDown.decTime<1) YellowDown.decreasing=false; 
+0074:  MOVF   31,F
+0075:  BTFSC  03.2
+0076:  BCF    2E.1
+....................    } 
+....................     
+....................    if(Green.decreasing && timeCounter>=100){ 
+0077:  BTFSS  36.1
+0078:  GOTO   082
+0079:  MOVF   28,W
+007A:  SUBLW  63
+007B:  BTFSC  03.0
+007C:  GOTO   082
+....................       Green.decTime--; 
+007D:  DECF   39,F
+....................       timeCounter=0; 
+007E:  CLRF   28
+....................       if(Green.decTime<1) Green.decreasing=false; 
+007F:  MOVF   39,F
+0080:  BTFSC  03.2
+0081:  BCF    36.1
+....................    } 
+....................     
+....................    if(YellowUp.decreasing && timeCounter>=100){ 
+0082:  BTFSS  32.1
+0083:  GOTO   08D
+0084:  MOVF   28,W
+0085:  SUBLW  63
+0086:  BTFSC  03.0
+0087:  GOTO   08D
+....................       YellowUp.decTime--; 
+0088:  DECF   35,F
+....................       timeCounter=0; 
+0089:  CLRF   28
+....................       if(YellowUp.decTime<1) YellowUp.decreasing=false; 
+008A:  MOVF   35,F
+008B:  BTFSC  03.2
+008C:  BCF    32.1
+....................    } 
+....................    
+....................    //Blink durante toma de tiempos 
+....................    
+....................    if(ProgramCycle.initialState ){ 
+008D:  BTFSS  4E.0
+008E:  GOTO   09B
+....................       counterBlink+=20;   //Ojo esto deberia ser +1, pero por simulacion se deja en 20 
+008F:  MOVLW  14
+0090:  ADDWF  29,F
+....................       if(counterBlink>=100 ){ 
+0091:  MOVF   29,W
+0092:  SUBLW  63
+0093:  BTFSC  03.0
+0094:  GOTO   09B
+....................       output_toggle(pin_a0); 
+0095:  BSF    03.5
+0096:  BCF    05.0
+0097:  MOVLW  01
+0098:  BCF    03.5
+0099:  XORWF  05,F
+....................       counterBlink=0; 
+009A:  CLRF   29
+....................       } 
+....................    } 
+....................    
+....................    
+....................    
+....................    
+.................... } 
+....................  
+.................... //Leer las entradas de señales segun color///// 
+009B:  BCF    0C.0
+009C:  BCF    0A.3
+009D:  BCF    0A.4
+009E:  GOTO   01D
+.................... void readSignals(){     
+....................    redSignal=INPUT (PIN_b0); 
+009F:  BSF    03.5
+00A0:  BSF    06.0
+00A1:  BCF    03.5
+00A2:  BCF    27.0
+00A3:  BTFSC  06.0
+00A4:  BSF    27.0
+....................    yellowSignal=INPUT (PIN_b1); 
+00A5:  BSF    03.5
+00A6:  BSF    06.1
+00A7:  BCF    03.5
+00A8:  BCF    27.1
+00A9:  BTFSC  06.1
+00AA:  BSF    27.1
+....................    greenSignal=INPUT (PIN_b2); 
+00AB:  BSF    03.5
+00AC:  BSF    06.2
+00AD:  BCF    03.5
+00AE:  BCF    27.2
+00AF:  BTFSC  06.2
+00B0:  BSF    27.2
+.................... } 
+00B1:  RETURN
+....................  
+....................  
+.................... ////////////////////////////////////////////////////////// 
+....................  
+....................  
+.................... ////////////Void main ///////////////////// 
+.................... void main(){ 
+00B2:  CLRF   04
+00B3:  BCF    03.7
+00B4:  MOVLW  1F
+00B5:  ANDWF  03,F
+00B6:  CLRF   28
+00B7:  CLRF   29
+00B8:  BSF    03.5
+00B9:  BSF    03.6
+00BA:  MOVF   09,W
+00BB:  ANDLW  C0
+00BC:  MOVWF  09
+00BD:  BCF    03.6
+00BE:  BCF    1F.4
+00BF:  BCF    1F.5
+00C0:  MOVLW  00
+00C1:  BSF    03.6
+00C2:  MOVWF  08
+00C3:  BCF    03.5
+00C4:  CLRF   07
+00C5:  CLRF   08
+00C6:  CLRF   09
+....................  
+.................... ///Configuracion de puertos/////////////// 
+.................... output_a(0x00); 
+*
+00EE:  BSF    03.5
+00EF:  CLRF   05
+00F0:  BCF    03.5
+00F1:  CLRF   05
+.................... SET_TRIS_A (0X00); 
+00F2:  MOVLW  00
+00F3:  BSF    03.5
+00F4:  MOVWF  05
+.................... output_b(0x0f); 
+00F5:  CLRF   06
+00F6:  MOVLW  0F
+00F7:  BCF    03.5
+00F8:  MOVWF  06
+.................... SET_TRIS_B (0X00); 
+00F9:  MOVLW  00
+00FA:  BSF    03.5
+00FB:  MOVWF  06
+.................... enable_interrupts(int_TIMER1); 
+00FC:  BSF    0C.0
+.................... ENABLE_INTERRUPTS (GLOBAL); 
+00FD:  MOVLW  C0
+00FE:  BCF    03.5
+00FF:  IORWF  0B,F
+.................... ////////////////////////////////////////// 
+.................... ///Configuracion de timer/////////////// 
+.................... SETUP_TIMER_1 (T1_INTERNAL|T1_DIV_BY_8);    //Configuracion para causar interrupcion 
+0100:  MOVLW  35
+0101:  MOVWF  10
+.................... SET_TIMER1 (64286);                         //cada 10ms 
+0102:  MOVLW  FB
+0103:  MOVWF  0F
+0104:  MOVLW  1E
+0105:  MOVWF  0E
+.................... ////////////////////////////////////// 
+....................  
+.................... while(true){ 
+....................          
+....................       while(ProgramCycle.initialState){      //Si el programa esta en su estado inicial(leyendo tiempos) 
+0106:  BTFSS  4E.0
+0107:  GOTO   136
+....................        
+....................          readSignals();                      //Leo entradas 
+0108:  CALL   09F
+....................          while(!redSignal){readSignals();}   //Espero a recibir señal en rojo 
+0109:  BTFSC  27.0
+010A:  GOTO   10D
+010B:  CALL   09F
+010C:  GOTO   109
+....................          Red.counting=true;                  //Activo flag para contar rojo 
+010D:  BSF    2A.0
+....................          readSignals();                      //Leo entradas 
+010E:  CALL   09F
+....................             while(redSignal){                //Mientras estoy leyendo rojo 
+010F:  BTFSS  27.0
+0110:  GOTO   115
+....................                  readSignals(); 
+0111:  CALL   09F
+....................                  if(yellowSignal) YellowDown.counting=true;  //Reviso si recibo señal amarillo, para activar flag counting amarillo hacia abajo 
+0112:  BTFSC  27.1
+0113:  BSF    2E.0
+....................                } 
+0114:  GOTO   10F
+....................          Red.counting=false;                 //Desactivo flag de conteo rojo 
+0115:  BCF    2A.0
+....................          YellowDown.counting=false;          //Desactivo flag de conteo amariilo hacia abajo 
+0116:  BCF    2E.0
+....................          Red.decTime=Red.actualTime;          //Copio conteo en variable que va a decrementar 
+0117:  MOVF   2B,W
+0118:  MOVWF  2D
+....................          YellowDown.decTime=YellowDown.actualTime;          //Copio conteo en variable que va a decrementar 
+0119:  MOVF   2F,W
+011A:  MOVWF  31
+....................          readSignals();                      //Leo entradas 
+011B:  CALL   09F
+....................          while(!greenSignal){readSignals();} //Espero a recibir señal en verde 
+011C:  BTFSC  27.2
+011D:  GOTO   120
+011E:  CALL   09F
+011F:  GOTO   11C
+....................          Green.counting=true;                //Activo flag para contar verde 
+0120:  BSF    36.0
+....................          while(greenSignal){readSignals();}  //Espero a dejar de recibir señal verde 
+0121:  BTFSS  27.2
+0122:  GOTO   125
+0123:  CALL   09F
+0124:  GOTO   121
+....................          Green.counting=false;               //Desactivo flag para contar verde 
+0125:  BCF    36.0
+....................          Green.decTime=Green.actualTime;          //Copio conteo en variable que va a decrementar 
+0126:  MOVF   37,W
+0127:  MOVWF  39
+....................          while(!yellowSignal){readSignals();} //Espero a recibir señal en amarillo hacia arriba 
+0128:  BTFSC  27.1
+0129:  GOTO   12C
+012A:  CALL   09F
+012B:  GOTO   128
+....................          YellowUp.counting=true;               //Activo flag para contar amarillo hacia arriba 
+012C:  BSF    32.0
+....................          while(yellowSignal){readSignals();} //Espero a dejar de recibir señal de amararillo 
+012D:  BTFSS  27.1
+012E:  GOTO   131
+012F:  CALL   09F
+0130:  GOTO   12D
+....................          YellowUp.counting=false;            //Desactivo flag de conteo amarillo hacia arriba 
+0131:  BCF    32.0
+....................          YellowUp.decTime=YellowUp.actualTime;          //Copio conteo en variable que va a decrementar 
+0132:  MOVF   33,W
+0133:  MOVWF  35
+....................          ProgramCycle.initialState=false;     //Para forzar siguiente while 
+0134:  BCF    4E.0
+....................       } 
+0135:  GOTO   106
+....................        
+....................       while(!ProgramCycle.initialState){     //Visualizar tiempos 
+0136:  BTFSC  4E.0
+0137:  GOTO   184
+....................        
+....................          readSignals();                      //Leo entradas 
+0138:  CALL   09F
+....................          while(!redSignal){readSignals();}   //Espero a recibir señal en rojo 
+0139:  BTFSC  27.0
+013A:  GOTO   13D
+013B:  CALL   09F
+013C:  GOTO   139
+....................          Red.decreasing=true;                //Activo flag para decrementar rojo 
+013D:  BSF    2A.1
+....................          readSignals();                      //Leo entradas 
+013E:  CALL   09F
+....................             while(redSignal){                //Mientras estoy leyendo rojo 
+013F:  BTFSS  27.0
+0140:  GOTO   14E
+....................                  readSignals(); 
+0141:  CALL   09F
+....................                  output_high(pin_a0);        //Activo led red 
+0142:  BSF    03.5
+0143:  BCF    05.0
+0144:  BCF    03.5
+0145:  BSF    05.0
+....................                  if(yellowSignal){           //Reviso si recibo señal amarillo, para activar flag decreasing amarillo hacia abajo 
+0146:  BTFSS  27.1
+0147:  GOTO   14D
+....................                      YellowDown.decreasing=true; 
+0148:  BSF    2E.1
+....................                      output_high(pin_a1);        //Activo led yellow 
+0149:  BSF    03.5
+014A:  BCF    05.1
+014B:  BCF    03.5
+014C:  BSF    05.1
+....................                      }  
+....................                } 
+014D:  GOTO   13F
+....................         output_low(pin_a0);                  //Apago red 
+014E:  BSF    03.5
+014F:  BCF    05.0
+0150:  BCF    03.5
+0151:  BCF    05.0
+....................         output_low(pin_a1);                  //Apago yellow 
+0152:  BSF    03.5
+0153:  BCF    05.1
+0154:  BCF    03.5
+0155:  BCF    05.1
+....................         Red.decreasing=false; 
+0156:  BCF    2A.1
+....................         YellowDown.decreasing=false; 
+0157:  BCF    2E.1
+....................          
+....................         readSignals();                      //Leo entradas 
+0158:  CALL   09F
+....................         while(!greenSignal){readSignals();} //Espero a recibir señal en verde 
+0159:  BTFSC  27.2
+015A:  GOTO   15D
+015B:  CALL   09F
+015C:  GOTO   159
+....................         Green.decreasing=true;                //Activo flag para decrementar verde 
+015D:  BSF    36.1
+....................         output_high(pin_a2);                 //Activo led green 
+015E:  BSF    03.5
+015F:  BCF    05.2
+0160:  BCF    03.5
+0161:  BSF    05.2
+....................         while(greenSignal){readSignals();}  //Espero a dejar de recibir señal verde 
+0162:  BTFSS  27.2
+0163:  GOTO   166
+0164:  CALL   09F
+0165:  GOTO   162
+....................         output_low(pin_a2);                 //Apago  led green 
+0166:  BSF    03.5
+0167:  BCF    05.2
+0168:  BCF    03.5
+0169:  BCF    05.2
+....................         Green.decreasing=false; 
+016A:  BCF    36.1
+....................          
+....................         while(!yellowSignal){readSignals();} //Espero a recibir señal en amarillo hacia arriba 
+016B:  BTFSC  27.1
+016C:  GOTO   16F
+016D:  CALL   09F
+016E:  GOTO   16B
+....................         YellowUp.decreasing=true;            //Activo flag para contar amarillo hacia arriba 
+016F:  BSF    32.1
+....................         output_high(pin_a1);                 //Activo led yellow 
+0170:  BSF    03.5
+0171:  BCF    05.1
+0172:  BCF    03.5
+0173:  BSF    05.1
+....................         while(yellowSignal){readSignals();} //Espero a dejar de recibir señal de amararillo 
+0174:  BTFSS  27.1
+0175:  GOTO   178
+0176:  CALL   09F
+0177:  GOTO   174
+....................         output_low(pin_a1);                 //Apago led yellow 
+0178:  BSF    03.5
+0179:  BCF    05.1
+017A:  BCF    03.5
+017B:  BCF    05.1
+....................         YellowUp.decreasing=false; 
+017C:  BCF    32.1
+....................          
+....................         //Terminado el ciclo, recupero tiempos para repetir visualizacion 
+....................         Red.decTime=Red.actualTime;          //Copio conteo en variable que va a decrementar 
+017D:  MOVF   2B,W
+017E:  MOVWF  2D
+....................         YellowDown.decTime=YellowDown.actualTime;          //Copio conteo en variable que va a decrementar 
+017F:  MOVF   2F,W
+0180:  MOVWF  31
+....................         Green.decTime=Green.actualTime;          //Copio conteo en variable que va a decrementar 
+0181:  MOVF   37,W
+0182:  MOVWF  39
+....................       }   
+0183:  GOTO   136
+....................   
+....................   
+....................  } 
+0184:  GOTO   106
+....................  
+.................... } 
+.................... /////////////////////////////////////////// 
+0185:  SLEEP
+
+Configuration Fuses:
+   Word  1: 2F81   XT NOWDT PUT NOMCLR PROTECT NOCPD BROWNOUT IESO FCMEN NOLVP NODEBUG
+   Word  2: 3FFF   NOWRT BORV40

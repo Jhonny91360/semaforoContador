@@ -1,0 +1,66 @@
+004-005 @READ_PROGRAM_MEMORY8.P1
+019.6   C1OUT
+020     @SCRATCH
+021     @SCRATCH
+021     _RETURN_
+022     @SCRATCH
+023     @SCRATCH
+024     ledRojo
+025     ledAmarillo
+026     ledVerde
+027     encender.luz
+027     apagar.luz
+028     encender.time
+029     @WRITEBITA.P1
+029-02A @MUL1616.P2
+029     encender.@SCRATCH1
+02A     @WRITEBITA.P1
+02A     encender.@SCRATCH2
+02B     @WRITEBITA.P1
+02B-02C @MUL1616.P2
+02B     encender.@SCRATCH3
+02C     @delay_ms1.P1
+02D     @MUL1616.@SCRATCH1
+09B-09C @READ_PROGRAM_MEMORY8.P1
+
+ROM Allocation:
+0027  @delay_ms1
+003B  encender
+000A  @WRITEBITA
+004E  @MUL1616
+0074  apagar
+0080  MAIN
+0080  @cinit
+
+
+User Memory space: 
+
+User Memory space: 
+
+Project Directory:
+    D:\Reflex\semaforoContador2023\
+
+Project Files:
+    tiemposAuxiliar.c
+    C:\Program Files (x86)\PICC\devices\12f629.h
+
+Units:
+    D:\Reflex\semaforoContador2023\tiemposAuxiliar (main)
+
+Compiler Settings:
+    Processor:      PIC12F629
+    Pointer Size:   8
+    Opt Level:      9
+    Short,Int,Long: UNSIGNED: 1,8,16
+    Float,Double:   32,32
+
+Output Files:
+    Errors:      tiemposAuxiliar.err
+    Ext Symbols: tiemposAuxiliar.esym
+    INHX8:       tiemposAuxiliar.hex
+    Symbols:     tiemposAuxiliar.sym
+    List:        tiemposAuxiliar.lst
+    Debug/COFF:  tiemposAuxiliar.cof
+    Project:     tiemposAuxiliar.PJT
+    Call Tree:   tiemposAuxiliar.tre
+    Statistics:  tiemposAuxiliar.sta
